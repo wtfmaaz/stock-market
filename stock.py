@@ -30,7 +30,7 @@ def load_data(file_path):
 # Predict the next 30 days
 def predict_future(model, data, look_back, scaler, days=30):
     predictions = []
-    input_seq = data[look_back:]
+    input_seq = data[-look_back:]
 
     for _ in range(days):
         input_seq_reshaped = np.reshape(input_seq, (1, look_back, 1))
@@ -103,7 +103,7 @@ if uploaded_file is not None:
     st.pyplot(plt)
 
     # Predict future
-    future_predictions = predict_future(model, inputs, scaler)
+    future_predictions = predict_future(model, inputs, look_back, scaler)
     st.subheader("Next 30 Days Prediction")
     st.line_chart(future_predictions)
 
