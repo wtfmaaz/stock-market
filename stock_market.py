@@ -106,13 +106,6 @@ ax.legend()
 st.pyplot(fig)
 
 
-     
-
-        # Identify trend
-        last_known_price = data['Close'].values[-1]
-        trend = "Increasing" if future_predictions[-1] > last_known_price else "Decreasing"
-        st.write(f"**Trend Prediction**: The stock price is likely to **{trend}** over the next 30 days.")
-
         # Show final predicted prices
         st.write("**Predicted Prices:**")
         st.dataframe(pd.DataFrame(future_predictions, columns=["Predicted Price"]))
