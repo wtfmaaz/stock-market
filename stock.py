@@ -26,6 +26,29 @@ def load_data(file_path):
     data['Date'] = pd.to_datetime(data['Date'])
     data.set_index('Date', inplace=True)
     return data
+# Prepare input for prediction
+last_10_days = X_scaled[-10:]
+next_30_days = []
+
+for _ in range(30):
+    input_data = np.reshape(last_10_days, (1, last_10_days.shape[0], 1))
+    next_day_prediction = model.predict(input_data)
+    next_30_days.append(next_day_prediction[0, 0])
+    last_10_days = np.roll(last_10_days, -1, axis=0)
+    last_10_days[-1] = next_day_prediction
+
+# Plot future predictions
+future_dates = pd.date_range(start=data.index[-1], periods=31, freq='D')[1:]
+future_prices = scaler.inverse_transform([[0] * (X.shape[1] - 1) + [price] for price in next_30_days])[:, -1]
+
+fig, ax = plt.subplots()
+ax.plot(data.index, data['Close'], label="Historical Prices")
+ax.plot(future_dates, future_prices, label="Future Predictions", linestyle='--', color="green")
+ax.set_title("Stock Price Prediction for Next 30 Days")
+ax.set_xlabel("Date")
+ax.set_ylabel("Price")
+ax.legend()
+st.pyplot(fig)
 
 # Predict the next 30 days
 def predict_future(model, data, look_back, scaler, days=30):
