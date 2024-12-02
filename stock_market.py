@@ -106,6 +106,4 @@ ax.legend()
 st.pyplot(fig)
 
 
-        # Show final predicted prices
-        st.write("**Predicted Prices:**")
-        st.dataframe(pd.DataFrame(future_predictions, columns=["Predicted Price"]))
+    
