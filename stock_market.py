@@ -81,17 +81,30 @@ if uploaded_file:
             model.fit(X_train, y_train, batch_size=32, epochs=10, verbose=1)
         st.success("Model trained successfully!")
 
-        # Prepare future prediction data
-        inputs = data['Close'].values[-look_back:]
-        inputs_scaled = scaler.transform(inputs.reshape(-1, 1))
+       # Prepare input for prediction
+last_10_days = X_scaled[-10:]
+next_30_days = []
 
-        X_future = []
-        for i in range(30):  # Predicting the next 30 days
-            X_future.append(inputs_scaled[-look_back:])
-            predicted = model.predict(np.array(X_future[-1:]).reshape(1, look_back, 1))
-            inputs_scaled = np.append(inputs_scaled, predicted, axis=0)
+for _ in range(30):
+    input_data = np.reshape(last_10_days, (1, last_10_days.shape[0], 1))
+    next_day_prediction = model.predict(input_data)
+    next_30_days.append(next_day_prediction[0, 0])
+    last_10_days = np.roll(last_10_days, -1, axis=0)
+    last_10_days[-1] = next_day_prediction
 
-        future_predictions = scaler.inverse_transform(inputs_scaled[-30:])
+# Plot future predictions
+future_dates = pd.date_range(start=data.index[-1], periods=31, freq='D')[1:]
+future_prices = scaler.inverse_transform([[0] * (X.shape[1] - 1) + [price] for price in next_30_days])[:, -1]
+
+fig, ax = plt.subplots()
+ax.plot(data.index, data['Close'], label="Historical Prices")
+ax.plot(future_dates, future_prices, label="Future Predictions", linestyle='--', color="green")
+ax.set_title("Stock Price Prediction for Next 30 Days")
+ax.set_xlabel("Date")
+ax.set_ylabel("Price")
+ax.legend()
+st.pyplot(fig)
+
 
         # Visualize future trend
         st.subheader("Prediction Results for Next 30 Days")
