@@ -39,29 +39,7 @@ def predict_future(model, data, look_back, scaler, days=30):
         input_seq = np.append(input_seq[1:], next_pred[0, 0])
 
     return scaler.inverse_transform(np.array(predictions).reshape(-1, 1))
-# Prepare input for prediction
-last_10_days = X_scaled[-10:]
-next_30_days = []
 
-for _ in range(30):
-    input_data = np.reshape(last_10_days, (1, last_10_days.shape[0], 1))
-    next_day_prediction = model.predict(input_data)
-    next_30_days.append(next_day_prediction[0, 0])
-    last_10_days = np.roll(last_10_days, -1, axis=0)
-    last_10_days[-1] = next_day_prediction
-
-# Plot future predictions
-future_dates = pd.date_range(start=data.index[-1], periods=31, freq='D')[1:]
-future_prices = scaler.inverse_transform([[0] * (X.shape[1] - 1) + [price] for price in next_30_days])[:, -1]
-
-fig, ax = plt.subplots()
-ax.plot(data.index, data['Close'], label="Historical Prices")
-ax.plot(future_dates, future_prices, label="Future Predictions", linestyle='--', color="green")
-ax.set_title("Stock Price Prediction for Next 30 Days")
-ax.set_xlabel("Date")
-ax.set_ylabel("Price")
-ax.legend()
-st.pyplot(fig)
 
 # Main app
 st.title("Apple Stock Price Prediction")
@@ -124,6 +102,29 @@ if uploaded_file is not None:
     plt.ylabel('Price')
     plt.legend()
     st.pyplot(plt)
+# Prepare input for prediction
+last_10_days = X_scaled[-10:]
+next_30_days = []
+
+for _ in range(30):
+    input_data = np.reshape(last_10_days, (1, last_10_days.shape[0], 1))
+    next_day_prediction = model.predict(input_data)
+    next_30_days.append(next_day_prediction[0, 0])
+    last_10_days = np.roll(last_10_days, -1, axis=0)
+    last_10_days[-1] = next_day_prediction
+
+# Plot future predictions
+future_dates = pd.date_range(start=data.index[-1], periods=31, freq='D')[1:]
+future_prices = scaler.inverse_transform([[0] * (X.shape[1] - 1) + [price] for price in next_30_days])[:, -1]
+
+fig, ax = plt.subplots()
+ax.plot(data.index, data['Close'], label="Historical Prices")
+ax.plot(future_dates, future_prices, label="Future Predictions", linestyle='--', color="green")
+ax.set_title("Stock Price Prediction for Next 30 Days")
+ax.set_xlabel("Date")
+ax.set_ylabel("Price")
+ax.legend()
+st.pyplot(fig)
 
     # Predict future
     future_predictions = predict_future(model, inputs, look_back, scaler)
