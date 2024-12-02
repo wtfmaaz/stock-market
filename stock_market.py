@@ -107,7 +107,7 @@ st.pyplot(fig)
 
 
         # Visualize future trend
-        st.subheader("Prediction Results for Next 30 Days")
+        st.subheader("Stock Price Prediction for Next 30 Days")
         visualize_trend(future_predictions)
 
         # Identify trend
