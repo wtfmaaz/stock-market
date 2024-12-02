@@ -106,9 +106,9 @@ ax.legend()
 st.pyplot(fig)
 
 
-        # Visualize future trend
-        st.subheader("Stock Price Prediction for Next 30 Days")
-        visualize_trend(future_predictions)
+       future_predictions = predict_future(model, inputs, look_back, scaler)
+    st.subheader("Next 30 Days Prediction")
+    st.line_chart(future_predictions)
 
         # Identify trend
         last_known_price = data['Close'].values[-1]
