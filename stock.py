@@ -26,6 +26,19 @@ def load_data(file_path):
     data['Date'] = pd.to_datetime(data['Date'])
     data.set_index('Date', inplace=True)
     return data
+
+# Predict the next 30 days
+def predict_future(model, data, look_back, scaler, days=30):
+    predictions = []
+    input_seq = data[-look_back:]
+
+    for _ in range(days):
+        input_seq_reshaped = np.reshape(input_seq, (1, look_back, 1))
+        next_pred = model.predict(input_seq_reshaped)
+        predictions.append(next_pred[0, 0])
+        input_seq = np.append(input_seq[1:], next_pred[0, 0])
+
+    return scaler.inverse_transform(np.array(predictions).reshape(-1, 1))
 # Prepare input for prediction
 last_10_days = X_scaled[-10:]
 next_30_days = []
@@ -49,19 +62,6 @@ ax.set_xlabel("Date")
 ax.set_ylabel("Price")
 ax.legend()
 st.pyplot(fig)
-
-# Predict the next 30 days
-def predict_future(model, data, look_back, scaler, days=30):
-    predictions = []
-    input_seq = data[-look_back:]
-
-    for _ in range(days):
-        input_seq_reshaped = np.reshape(input_seq, (1, look_back, 1))
-        next_pred = model.predict(input_seq_reshaped)
-        predictions.append(next_pred[0, 0])
-        input_seq = np.append(input_seq[1:], next_pred[0, 0])
-
-    return scaler.inverse_transform(np.array(predictions).reshape(-1, 1))
 
 # Main app
 st.title("Apple Stock Price Prediction")
