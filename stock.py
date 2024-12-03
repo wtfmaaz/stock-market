@@ -46,11 +46,7 @@ st.title("Apple Stock Price Prediction")
 st.sidebar.header("Upload Dataset")
 uploaded_file = st.sidebar.file_uploader("/content/AAPL (1).csv", type=["csv"])
 
-if uploaded_file :
-     # Load data
-    data = load_data(uploaded_file)
-    st.subheader("Dataset Preview")
-    st.dataframe(data.head())
+if uploaded_file is not None:
     st.sidebar.success("Dataset Uploaded Successfully!")
 
     # Load data
