@@ -27,22 +27,24 @@ def load_data(file_path):
     data.set_index('Date', inplace=True)
     return data
     
+   # Predict the next 30 days with corrected scaling
 def predict_future(model, data, look_back, scaler, days=30):
     predictions = []
-    input_seq = data[-look_back:].reshape(-1, 1)
+    input_seq = data[-look_back:]
 
     for _ in range(days):
-        # Reshape input for prediction
         input_seq_reshaped = np.reshape(input_seq, (1, look_back, 1))
-        next_pred = model.predict(input_seq_reshaped)
+        next_pred_scaled = model.predict(input_seq_reshaped)  # Prediction is scaled
+        next_pred = scaler.inverse_transform(next_pred_scaled)  # Inverse transform prediction
+        predictions.append(next_pred[0, 0])  # Store the unscaled value
 
-        # Add the prediction to the sequence
-        predictions.append(next_pred[0, 0])
-        input_seq = np.append(input_seq, next_pred[0, 0])[-look_back:].reshape(-1, 1)
+        # Append scaled prediction to input sequence for further predictions
+        next_pred_scaled = next_pred_scaled[0, 0]  # Flatten prediction to 1D
+        input_seq = np.append(input_seq[1:], next_pred_scaled)  # Add scaled value to sequence
 
-    # Reverse scaling for better interpretation
-    predictions_scaled_back = scaler.inverse_transform(np.array(predictions).reshape(-1, 1))
-    return predictions_scaled_back
+    return np.array(predictions)
+ 
+
 
 
 
@@ -110,10 +112,10 @@ if uploaded_file is not None:
 
 
     # Predict future
+     future_predictions = predict_future(model, inputs, look_back, scaler)
     st.subheader("Next 30 Days Prediction")
-    future_dates = pd.date_range(start=test_data.index[-1] + pd.Timedelta(days=1), periods=30)
-    future_df = pd.DataFrame(future_predictions, index=future_dates, columns=['Predicted Price'])
-    st.line_chart(future_df)
+    st.line_chart(future_predictions)
+
 
     # Accuracy metrics
     actual_prices = test_data['Close'].values
