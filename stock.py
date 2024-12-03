@@ -110,8 +110,9 @@ if uploaded_file is not None:
 
 
     # Predict future
-    future_predictions = predict_future(model, inputs, look_back, scaler)
     st.subheader("Next 30 Days Prediction")
+    future_dates = pd.date_range(start=test_data.index[-1] + pd.Timedelta(days=1), periods=30)
+    future_df = pd.DataFrame(future_predictions, index=future_dates, columns=['Predicted Price'])
     st.line_chart(future_predictions)
 
     # Accuracy metrics
