@@ -123,7 +123,7 @@ if uploaded_file is not None:
     st.pyplot(plt)
 
     # Predict future with trend
-    future_predictions = predict_future_with_forced_trend(model, inputs, look_back, scaler, trend_factor=0.005)
+    future_predictions = predict_future_with_forced_trend(model, inputs, look_back, scaler)
     st.subheader("Next 30 Days Prediction with Increasing Trend")
     st.line_chart(future_predictions)
 
