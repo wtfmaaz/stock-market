@@ -26,18 +26,25 @@ def load_data(file_path):
     data['Date'] = pd.to_datetime(data['Date'])
     data.set_index('Date', inplace=True)
     return data
-
-# Predict the next 30 days
+    
 def predict_future(model, data, look_back, scaler, days=30):
     predictions = []
-    input_seq = data[-look_back:]
+    input_seq = data[-look_back:].reshape(-1, 1)
+
     for _ in range(days):
+        # Reshape input for prediction
         input_seq_reshaped = np.reshape(input_seq, (1, look_back, 1))
         next_pred = model.predict(input_seq_reshaped)
-        next_pred_rescaled = scaler.inverse_transform(next_pred)
-        predictions.append(next_pred_rescaled[0, 0])
-        input_seq = np.append(input_seq[1:], next_pred / np.mean(input_seq))  # Adjust trend
-    return predictions
+
+        # Add the prediction to the sequence
+        predictions.append(next_pred[0, 0])
+        input_seq = np.append(input_seq, next_pred[0, 0])[-look_back:].reshape(-1, 1)
+
+    # Reverse scaling for better interpretation
+    predictions_scaled_back = scaler.inverse_transform(np.array(predictions).reshape(-1, 1))
+    return predictions_scaled_back
+
+
 
 # Main app
 st.title("Apple Stock Price Prediction")
