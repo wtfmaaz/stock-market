@@ -42,16 +42,16 @@ def predict_future_with_forced_trend(model, data, look_back, scaler, days=30):
 
     # Calculate a trend factor based on historical growth
     periods = len(data)  # Number of periods in training data
-    historical_data = scaler.inverse_transform(data)  # Unscaled data for trend calculation
+    historical_data = scaler.inverse_transform(data.reshape(-1, 1)).flatten()  # Unscaled data as 1D NumPy array
     trend_factor = calculate_cagr(historical_data, periods) + 0.01  # Add a small boost (1%)
 
     for _ in range(days):
         input_seq_reshaped = np.reshape(input_seq, (1, look_back, 1))
         next_pred_scaled = model.predict(input_seq_reshaped)  # Model's prediction (scaled)
-        next_pred = scaler.inverse_transform(next_pred_scaled)  # Inverse transform prediction
+        next_pred = scaler.inverse_transform([[next_pred_scaled[0, 0]]])[0, 0]  # Inverse transform prediction
 
         # Force an increasing trend by adding the trend factor
-        next_pred = next_pred[0, 0] * (1 + trend_factor)
+        next_pred *= (1 + trend_factor)
         predictions.append(next_pred)
 
         # Append scaled prediction back to input sequence
@@ -59,7 +59,7 @@ def predict_future_with_forced_trend(model, data, look_back, scaler, days=30):
         input_seq = np.append(input_seq[1:], next_pred_scaled)
 
     return np.array(predictions)
-    
+
 # Main app
 st.title("Apple Stock Price Prediction")
 st.sidebar.header("Upload Dataset")
