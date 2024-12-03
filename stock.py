@@ -28,7 +28,7 @@ def load_data(file_path):
     return data
 
 # Predict the next 30 days
-def predict_future_with_trend(model, data, look_back, scaler, days=30):
+def predict_future(model, data, look_back, scaler, days=30):
     predictions = []
     input_seq = data[-look_back:]
     for _ in range(days):
