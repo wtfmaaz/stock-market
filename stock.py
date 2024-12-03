@@ -57,8 +57,7 @@ def predict_future_with_forced_trend(model, data, look_back, scaler, days=30):
         # Append scaled prediction back to input sequence
         next_pred_scaled = scaler.transform([[next_pred]])[0, 0]
         input_seq = np.append(input_seq[1:], next_pred_scaled)
-
-    return np.array(predictions)
+ return np.array(predictions)
 
 # Main app
 st.title("Apple Stock Price Prediction")
