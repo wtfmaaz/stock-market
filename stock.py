@@ -26,9 +26,9 @@ def load_data(file_path):
     data['Date'] = pd.to_datetime(data['Date'])
     data.set_index('Date', inplace=True)
     return data
-    
-   # Predict the next 30 days with corrected scaling
-def predict_future(model, data, look_back, scaler, days=30):
+
+# Predict the next 30 days with an increasing trend component
+def predict_future_with_trend(model, data, look_back, scaler, days=30, trend_factor=0.001):
     predictions = []
     input_seq = data[-look_back:]
 
@@ -36,23 +36,18 @@ def predict_future(model, data, look_back, scaler, days=30):
         input_seq_reshaped = np.reshape(input_seq, (1, look_back, 1))
         next_pred_scaled = model.predict(input_seq_reshaped)  # Prediction is scaled
         next_pred = scaler.inverse_transform(next_pred_scaled)  # Inverse transform prediction
-        predictions.append(next_pred[0, 0])  # Store the unscaled value
 
-        # Append scaled prediction to input sequence for further predictions
-        next_pred_scaled = next_pred_scaled[0, 0]  # Flatten prediction to 1D
-        input_seq = np.append(input_seq[1:], next_pred_scaled)  # Add scaled value to sequence
+        # Add a trend factor (percentage increase) to the predicted value
+        next_pred = next_pred[0, 0] * (1 + trend_factor)
+        predictions.append(next_pred)
+
+        # Append scaled prediction (after scaling it back) to input sequence
+        next_pred_scaled = scaler.transform([[next_pred]])[0, 0]
+        input_seq = np.append(input_seq[1:], next_pred_scaled)
 
     return np.array(predictions)
- 
-
-
-
 
 # Main app
-st.title("Apple Stock Price Prediction")
-st.sidebar.header("Upload Dataset")
-uploaded_file = st.sidebar.file_uploader("/content/AAPL (1).csv", type=["csv"])
-
 if uploaded_file is not None:
     st.sidebar.success("Dataset Uploaded Successfully!")
 
@@ -110,12 +105,10 @@ if uploaded_file is not None:
     plt.legend()
     st.pyplot(plt)
 
-
-    # Predict future
-     future_predictions = predict_future(model, inputs, look_back, scaler)
-    st.subheader("Next 30 Days Prediction")
+    # Predict future with trend
+    future_predictions = predict_future_with_trend(model, inputs, look_back, scaler, trend_factor=0.005)
+    st.subheader("Next 30 Days Prediction with Increasing Trend")
     st.line_chart(future_predictions)
-
 
     # Accuracy metrics
     actual_prices = test_data['Close'].values
