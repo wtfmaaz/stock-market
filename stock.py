@@ -27,25 +27,38 @@ def load_data(file_path):
     data.set_index('Date', inplace=True)
     return data
 
-# Predict the next 30 days with an increasing trend component
-def predict_future_with_trend(model, data, look_back, scaler, days=30, trend_factor=0.001):
+# Function to calculate historical growth rate (CAGR)
+def calculate_cagr(data, periods):
+    start_value = data.iloc[0]
+    end_value = data.iloc[-1]
+    cagr = ((end_value / start_value) ** (1 / periods)) - 1
+    return cagr
+
+# Predict the next 30 days with a blended trend component
+def predict_future_with_forced_trend(model, data, look_back, scaler, days=30):
     predictions = []
     input_seq = data[-look_back:]
 
+    # Calculate a trend factor based on historical growth
+    periods = len(data)  # Number of periods in training data
+    historical_data = scaler.inverse_transform(data)  # Unscaled data for trend calculation
+    trend_factor = calculate_cagr(historical_data, periods) + 0.01  # Add a small boost (1%)
+
     for _ in range(days):
         input_seq_reshaped = np.reshape(input_seq, (1, look_back, 1))
-        next_pred_scaled = model.predict(input_seq_reshaped)  # Prediction is scaled
+        next_pred_scaled = model.predict(input_seq_reshaped)  # Model's prediction (scaled)
         next_pred = scaler.inverse_transform(next_pred_scaled)  # Inverse transform prediction
 
-        # Add a trend factor (percentage increase) to the predicted value
+        # Force an increasing trend by adding the trend factor
         next_pred = next_pred[0, 0] * (1 + trend_factor)
         predictions.append(next_pred)
 
-        # Append scaled prediction (after scaling it back) to input sequence
+        # Append scaled prediction back to input sequence
         next_pred_scaled = scaler.transform([[next_pred]])[0, 0]
         input_seq = np.append(input_seq[1:], next_pred_scaled)
 
     return np.array(predictions)
+
 
 # Main app
 st.title("Apple Stock Price Prediction")
