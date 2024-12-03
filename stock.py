@@ -113,7 +113,7 @@ if uploaded_file is not None:
     st.subheader("Next 30 Days Prediction")
     future_dates = pd.date_range(start=test_data.index[-1] + pd.Timedelta(days=1), periods=30)
     future_df = pd.DataFrame(future_predictions, index=future_dates, columns=['Predicted Price'])
-    st.line_chart(future_predictions)
+    st.line_chart(future_df)
 
     # Accuracy metrics
     actual_prices = test_data['Close'].values
