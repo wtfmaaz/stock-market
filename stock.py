@@ -48,8 +48,13 @@ def predict_future_with_trend(model, data, look_back, scaler, days=30, trend_fac
     return np.array(predictions)
 
 # Main app
+st.title("Apple Stock Price Prediction")
+st.sidebar.header("Upload Dataset")
+uploaded_file = st.sidebar.file_uploader("/content/AAPL (1).csv", type=["csv"])
+
 if uploaded_file is not None:
     st.sidebar.success("Dataset Uploaded Successfully!")
+
 
     # Load data
     data = load_data(uploaded_file)
