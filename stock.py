@@ -29,10 +29,11 @@ def load_data(file_path):
 
 # Function to calculate historical growth rate (CAGR)
 def calculate_cagr(data, periods):
-    start_value = data.iloc[0]
-    end_value = data.iloc[-1]
+    start_value = data[0]  # Use direct indexing for NumPy array
+    end_value = data[-1]   # Use direct indexing for NumPy array
     cagr = ((end_value / start_value) ** (1 / periods)) - 1
     return cagr
+
 
 # Predict the next 30 days with a blended trend component
 def predict_future_with_forced_trend(model, data, look_back, scaler, days=30):
