@@ -124,7 +124,7 @@ if uploaded_file is not None:
 
     # Predict future with trend
     future_predictions = predict_future_with_forced_trend(model, inputs, look_back, scaler)
-    st.subheader("Next 30 Days Prediction with Increasing Trend")
+    st.subheader("Next 30 Days Prediction ")
     st.line_chart(future_predictions)
 
     # Accuracy metrics
